@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE paths SYSTEM "test.dtd">
+
+<dummys>
+	<dummy id="dummy1" >
+		<parent id="dummy0" />
+		<child id="child1" />
+		<child id="child2" />
+		<child id-ref="dummy3"/>
+	</dummy>
+	
+	<dummy id="dummy3" >
+		<parent id-ref="dummy4"/>
+	</dummy>
+	
+	<dummy id="dummy4"/>
+		
+</dummys>

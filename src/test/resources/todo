@@ -1,0 +1,3 @@
+create configuration handler hierarchy
+each handler can have a parent handler or null in which case the root handler will be
+specified

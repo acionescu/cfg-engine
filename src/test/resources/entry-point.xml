@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE paths SYSTEM "entry-point.dtd">
+
+<configuration>
+
+	
+
+<!--	<resource id="baseCfgHandler" class="com.cosmote.rtbus.core.configuration.handlers.BaseConfigurationHandler">-->
+<!--		<property name="attributesToProperties">-->
+<!--			<value>-->
+<!--				<map>-->
+<!--					<entry key="attr" value="prop"/>-->
+<!--				</map>-->
+<!--			</value>-->
+<!--		</property>-->
+<!--		-->
+<!--		<property name="tagsToProperties">-->
+<!--			<value>-->
+<!--				<map>-->
+<!--					<entry key="the-parent" value="parent"/>-->
+<!--				</map>-->
+<!--			</value>-->
+<!--		</property>-->
+<!--	</resource>-->
+
+<!--	<cfg-handler tag-name="dummy" class="com.cosmote.rtbus.core.configuration.handlers.CustomConfigurationHandler" default-class="test.DummyClass">-->
+<!--		<property name="attributesToProperties">-->
+<!--			<value>-->
+<!--				<map>-->
+<!--					<entry key="id" value="name"/>-->
+<!--				</map>-->
+<!--			</value>-->
+<!--		</property>-->
+<!--		-->
+<!--		<property name="tagsToProperties">-->
+<!--			<value>-->
+<!--				<map>-->
+<!--					<entry key="parent" value="parent"/>-->
+<!--					<entry key="child" value="children"></entry>-->
+<!--				</map>-->
+<!--			</value>-->
+<!--		</property>-->
+<!--		-->
+<!--			-->
+<!--	</cfg-handler>-->
+<!--	-->
+<!--	<cfg-handler tag-name="dummy" tag-ref="dummy">-->
+<!--		<local-cfg-handler id ="parent" tag-name="parent" tag-ref="dummy"/>-->
+<!--		<local-cfg-handler id="child" tag-name="child" tag-ref="dummy"/>-->
+<!--	</cfg-handler>	-->
+	
+	<file>test.xml</file>
+
+</configuration>
+

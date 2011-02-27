@@ -1,0 +1,15 @@
+<!ELEMENT dummy ( parent, child* )* >
+<!ATTLIST dummy class NMTOKEN #IMPLIED >
+<!ATTLIST dummy id NMTOKEN #IMPLIED >
+<!ATTLIST dummy init-method CDATA #IMPLIED >
+<!ATTLIST dummy destroy-method CDATA #IMPLIED >
+
+<!ELEMENT dummys ( dummy* ) >
+
+<!ELEMENT parent ( #PCDATA ) >
+<!ATTLIST parent id NMTOKEN #IMPLIED >
+<!ATTLIST parent id-ref NMTOKEN #IMPLIED >
+
+<!ELEMENT child ( #PCDATA ) >
+<!ATTLIST child id NMTOKEN #IMPLIED >
+<!ATTLIST child id-ref NMTOKEN #IMPLIED >
