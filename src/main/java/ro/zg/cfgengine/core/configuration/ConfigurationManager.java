@@ -36,8 +36,11 @@ import ro.zg.cfgengine.core.configuration.loader.ConfigurationLoader;
 import ro.zg.cfgengine.core.configuration.loader.PackageConfigurationLoader;
 import ro.zg.cfgengine.core.exceptions.ConfigurationException;
 import ro.zg.log.Log;
+import ro.zg.util.logging.Logger;
+import ro.zg.util.logging.MasterLogManager;
 
 public class ConfigurationManager {
+    private static Logger logger = MasterLogManager.getLogger("CFG-ENGINE");
     private ObjectRepository repository = new ObjectRepository();
     private Queue<ConfigurationLoader> loadQueue = new ConcurrentLinkedQueue<ConfigurationLoader>();
     private XmlConfigurationBuilder handlerBuilder;
@@ -48,59 +51,70 @@ public class ConfigurationManager {
     public ConfigurationManager() {
 	initDefaultBuilders();
     }
-    
+
     private void initDefaultBuilders() {
 	ConfigurationHandler objectsRootHandler;
 	try {
 	    objectsRootHandler = createBasicConfigurationHandler();
-	    objectsBuilder = new XmlConfigurationBuilder(objectsRootHandler,resourcesLoader);
+	    objectsBuilder = new XmlConfigurationBuilder(objectsRootHandler,
+		    resourcesLoader);
 	} catch (ConfigurationException e) {
 	    Log.error(this, "Error creating ConfigurationManager", e);
 	}
     }
-    
-    public ConfigurationManager(ClassLoader cl){
+
+    public ConfigurationManager(ClassLoader cl) {
 	resourcesLoader = cl;
 	initDefaultBuilders();
     }
 
-    public ConfigurationManager(ConfigurationLoader customHandlersLoader) throws ConfigurationException {
+    public ConfigurationManager(ConfigurationLoader customHandlersLoader)
+	    throws ConfigurationException {
 	initBuilders(customHandlersLoader);
     }
-    
-    public ConfigurationManager(ConfigurationLoader customHandlersLoader, ClassLoader cl) throws ConfigurationException {
+
+    public ConfigurationManager(ConfigurationLoader customHandlersLoader,
+	    ClassLoader cl) throws ConfigurationException {
 	this.resourcesLoader = cl;
 	initBuilders(customHandlersLoader);
     }
-    
-    private void initBuilders(ConfigurationLoader customHandlersLoader){
-	// now create the builder which will load the custom configuration handlers
+
+    private void initBuilders(ConfigurationLoader customHandlersLoader) {
+	// now create the builder which will load the custom configuration
+	// handlers
 	try {
-	    handlerBuilder = new XmlConfigurationBuilder(createCustomHandlerLoader(),resourcesLoader);
+	    handlerBuilder = new XmlConfigurationBuilder(
+		    createCustomHandlerLoader(), resourcesLoader);
 	    // load the custom handlers
-	    List<ManageableObject> customHandlers = handlerBuilder.configure(customHandlersLoader.load());
+	    List<ManageableObject> customHandlers = handlerBuilder
+		    .configure(customHandlersLoader.load());
 	    ObjectRepository handlersRepository = new ObjectRepository();
 	    handlersRepository.addListOfObjects(customHandlers);
 	    resolveDependencies(handlersRepository);
 
 	    ConfigurationHandler objectsRootHandler = createBasicConfigurationHandler();
 
-	    ConfigurationHandler defHandler = (ConfigurationHandler) handlersRepository.getObject("rootHandler")
-		    .getTarget();
-	    //			
+	    ConfigurationHandler defHandler = (ConfigurationHandler) handlersRepository
+		    .getObject("rootHandler").getTarget();
+	    //
 	    for (ManageableObject cc : customHandlers) {
-		ConfigurationHandler cfgh = (ConfigurationHandler) cc.getTarget();
+		ConfigurationHandler cfgh = (ConfigurationHandler) cc
+			.getTarget();
 		cfgh.setParentConfigurationHandler(objectsRootHandler);
 	    }
 
-	    objectsRootHandler.getLocalConfigurationHandlers().putAll(defHandler.getLocalConfigurationHandlers());
+	    objectsRootHandler.getLocalConfigurationHandlers().putAll(
+		    defHandler.getLocalConfigurationHandlers());
 
-	    objectsBuilder = new XmlConfigurationBuilder(objectsRootHandler,resourcesLoader);
-	    // List<ManageableObject> loadedHandlers = handlersRepository.getOjbectsByTagName("cfg-handler");
+	    objectsBuilder = new XmlConfigurationBuilder(objectsRootHandler,
+		    resourcesLoader);
+	    // List<ManageableObject> loadedHandlers =
+	    // handlersRepository.getOjbectsByTagName("cfg-handler");
 	    // if(loadedHandlers != null){
 	    // for(ManageableObject handler : loadedHandlers){
-	    //					
-	    // // objectsRootHandler.registerLocalConfigurationHandler(name, cfgHandler)
+	    //
+	    // // objectsRootHandler.registerLocalConfigurationHandler(name,
+	    // cfgHandler)
 	    // }
 	    // }
 
@@ -117,10 +131,12 @@ public class ConfigurationManager {
 	while ((loader = loadQueue.poll()) != null) {
 	    try {
 		InputStream in = loader.load();
-		List<ManageableObject> loadedObjects = objectsBuilder.configure(in);
+		List<ManageableObject> loadedObjects = objectsBuilder
+			.configure(in);
 		repository.addListOfObjects(loadedObjects);
 	    } catch (Exception e) {
-		throw new ConfigurationException("Error loading " + loader.getTargetToLoad(), e);
+		throw new ConfigurationException("Error loading "
+			+ loader.getTargetToLoad(), e);
 	    }
 	}
 	// now try to resolve the dependencies
@@ -133,18 +149,18 @@ public class ConfigurationManager {
 	}
     }
 
-    private void initializeObjects(List<ManageableObject> loadedObjects) throws Exception {
+    private void initializeObjects(List<ManageableObject> loadedObjects)
+	    throws Exception {
 	for (ManageableObject o : loadedObjects) {
 	    o.setResourcesLoader(resourcesLoader);
 	    o.callInitMethod();
 	}
     }
-    
-    
 
     /**
-     * Destroys the objects by calling the method specified as destroy method This should be used for cleanup when the
-     * configuration is not needed anymore
+     * Destroys the objects by calling the method specified as destroy method
+     * This should be used for cleanup when the configuration is not needed
+     * anymore
      * 
      * @throws Exception
      */
@@ -156,7 +172,8 @@ public class ConfigurationManager {
 	repository.purge();
     }
 
-    public void load(List<ConfigurationLoader> loaders) throws ConfigurationException {
+    public void load(List<ConfigurationLoader> loaders)
+	    throws ConfigurationException {
 	loadQueue.addAll(loaders);
 	load();
     }
@@ -166,29 +183,41 @@ public class ConfigurationManager {
 	load();
     }
 
-    private ConfigurationHandler createBasicConfigurationHandler() throws ConfigurationException {
+    private ConfigurationHandler createBasicConfigurationHandler()
+	    throws ConfigurationException {
 	// register xml configuration handlers
 	ConfigurationHandler newCfgHandler = new BaseConfigurationHandler();
 
-	newCfgHandler.registerLocalConfigurationHandler("property", new PropertyConfigurationHandler());
-	newCfgHandler.registerLocalConfigurationHandler("map", new MapConfigurationHandler());
-	newCfgHandler.registerLocalConfigurationHandler("value", new ValueConfigurationHandler());
-	newCfgHandler.registerLocalConfigurationHandler("list", new ListConfigurationHandler());
-	newCfgHandler.registerLocalConfigurationHandler("file", new FileConfigurationHandler(this));
-	newCfgHandler.registerLocalConfigurationHandler("dir", new DirConfigurationHandler(this));
-	newCfgHandler.registerLocalConfigurationHandler("resource", new BaseConfigurationHandler());
-	newCfgHandler.registerLocalConfigurationHandler("key", new ValueConfigurationHandler());
-	newCfgHandler.registerLocalConfigurationHandler("value-type", new TypedValueConfigurationHandler());
+	newCfgHandler.registerLocalConfigurationHandler("property",
+		new PropertyConfigurationHandler());
+	newCfgHandler.registerLocalConfigurationHandler("map",
+		new MapConfigurationHandler());
+	newCfgHandler.registerLocalConfigurationHandler("value",
+		new ValueConfigurationHandler());
+	newCfgHandler.registerLocalConfigurationHandler("list",
+		new ListConfigurationHandler());
+	newCfgHandler.registerLocalConfigurationHandler("file",
+		new FileConfigurationHandler(this));
+	newCfgHandler.registerLocalConfigurationHandler("dir",
+		new DirConfigurationHandler(this));
+	newCfgHandler.registerLocalConfigurationHandler("resource",
+		new BaseConfigurationHandler());
+	newCfgHandler.registerLocalConfigurationHandler("key",
+		new ValueConfigurationHandler());
+	newCfgHandler.registerLocalConfigurationHandler("value-type",
+		new TypedValueConfigurationHandler());
 	return newCfgHandler;
     }
 
-    public void addResourceToLoad(String resourceName){
-	addLoader(new PackageConfigurationLoader(resourceName,resourcesLoader));
+    public void addResourceToLoad(String resourceName) {
+	addLoader(new PackageConfigurationLoader(resourceName, resourcesLoader));
     }
-    
-    private ConfigurationHandler createCustomHandlerLoader() throws ConfigurationException {
+
+    private ConfigurationHandler createCustomHandlerLoader()
+	    throws ConfigurationException {
 	ConfigurationHandler newCfgHandler = createBasicConfigurationHandler();
-	// create the handler which will create configuration handlers from xml definitions
+	// create the handler which will create configuration handlers from xml
+	// definitions
 	CustomConfigurationHandler customCfgHandler = new CustomConfigurationHandler();
 	customCfgHandler.setParentConfigurationHandler(newCfgHandler);
 	customCfgHandler.setHasIdAttribute(false);
@@ -199,7 +228,8 @@ public class ConfigurationManager {
 
 	Map<String, String> tagsToProperties = new HashMap<String, String>();
 	tagsToProperties.put("local-cfg-handler", "localConfigurationHandlers");
-	// tagsToProperties.put("attribute-to-property", "attributesToProperties");
+	// tagsToProperties.put("attribute-to-property",
+	// "attributesToProperties");
 	// tagsToProperties.put("tag-to-property", "tagsToProperties");
 	customCfgHandler.setTagsToProperties(tagsToProperties);
 
@@ -207,20 +237,25 @@ public class ConfigurationManager {
 	localHandlers.put("local-cfg-handler", customCfgHandler);
 	customCfgHandler.setLocalConfigurationHandlers(localHandlers);
 
-	newCfgHandler.registerLocalConfigurationHandler("cfg-handler", customCfgHandler);
+	newCfgHandler.registerLocalConfigurationHandler("cfg-handler",
+		customCfgHandler);
 
 	return newCfgHandler;
     }
 
-    public void resolveDependencies(ObjectRepository repository) throws ConfigurationException {
+    public void resolveDependencies(ObjectRepository repository)
+	    throws ConfigurationException {
 	List<ManageableObject> allObjects = repository.getAllObjects();
 	for (ManageableObject mo : allObjects) {
 	    String[] dependecies = mo.getDependencies().toArray(new String[0]);
 	    for (String dependencyId : dependecies) {
-		ManageableObject dependency = repository.getObject(dependencyId);
+		ManageableObject dependency = repository
+			.getObject(dependencyId);
 		if (dependency == null) {
-		    throw new ConfigurationException("Error setting dependency with id '" + dependencyId
-			    + " on object with id '" + mo.getId() + "'.");
+		    throw new ConfigurationException(
+			    "Error setting dependency with id '" + dependencyId
+				    + " on object with id '" + mo.getId()
+				    + "'.");
 		}
 		mo.resolveDependency(dependencyId, dependency.getTarget());
 	    }
@@ -240,28 +275,34 @@ public class ConfigurationManager {
     }
 
     public Map getObjectsByTagName(String tagName) {
-	List<ManageableObject> objList = repository.getObjectsByTagName(tagName);
+	List<ManageableObject> objList = repository
+		.getObjectsByTagName(tagName);
 	Map result = new HashMap<String, Object>();
-	for (ManageableObject obj : objList) {
-	    result.put(obj.getId(), obj.getTarget());
+	if (objList != null) {
+	    for (ManageableObject obj : objList) {
+		result.put(obj.getId(), obj.getTarget());
+	    }
+	}
+	else{
+	    logger.warn("Objects list for tag '"+tagName+"' is null");
 	}
 	return result;
     }
-    
-    public String getObjectTagById(String id){
+
+    public String getObjectTagById(String id) {
 	return repository.getObjectTagById(id);
     }
-    
-    public Map<String,Object> getAllObjects(){
+
+    public Map<String, Object> getAllObjects() {
 	List<ManageableObject> allObjects = repository.getAllObjects();
-	Map<String,Object> objMap = new HashMap<String, Object>();
+	Map<String, Object> objMap = new HashMap<String, Object>();
 	for (ManageableObject mo : allObjects) {
 	    objMap.put(mo.getId(), mo.getTarget());
 	}
 	return objMap;
     }
-    
-    public boolean containsObjectWithId(String id){
+
+    public boolean containsObjectWithId(String id) {
 	return repository.containsObjectWithId(id);
     }
 
@@ -269,7 +310,7 @@ public class ConfigurationManager {
      * @return the resourcesLoader
      */
     public ClassLoader getResourcesLoader() {
-        return resourcesLoader;
+	return resourcesLoader;
     }
-    
+
 }

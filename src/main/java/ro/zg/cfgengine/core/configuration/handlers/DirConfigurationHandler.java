@@ -105,7 +105,7 @@ public class DirConfigurationHandler extends BaseConfigurationHandler {
     }
 
     private void loadFiles(String path, boolean recursive) throws Exception {
-	if (path.endsWith(File.separator)) {
+	if (path.endsWith(File.separator)|| path.endsWith("/")) {
 	    /* this is a directory */
 	    URL url = cfgManager.getResourcesLoader().getResource(path);
 	    if (url != null) {
