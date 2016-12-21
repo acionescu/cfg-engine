@@ -28,13 +28,17 @@ public class UrlConfigurationLoader implements ConfigurationLoader{
     private ClassLoader classLoader;
     
     public UrlConfigurationLoader(List<String> urls,String target){
-	setUrls(urls.toArray(new String[0]));
-	this.target = target;
+	this(urls.toArray(new String[0]),target);
 	 
     }
     
     public UrlConfigurationLoader(String[] urls, String target){
-	setUrls(urls);
+	setUrls(urls,Thread.currentThread().getContextClassLoader());
+	this.target = target;
+    }
+    
+    public UrlConfigurationLoader(String[] urls, String target, ClassLoader parentClassLoader){
+	setUrls(urls, parentClassLoader);
 	this.target = target;
     }
     
@@ -47,7 +51,7 @@ public class UrlConfigurationLoader implements ConfigurationLoader{
 	return classLoader.getResourceAsStream(target);
     }
 
-    private void setUrls(String[] urlsString){
+    private void setUrls(String[] urlsString, ClassLoader parentClassLoader){
 	urls = new URL[urlsString.length];
 	int i = 0;
 	for(String u : urlsString){
@@ -58,7 +62,7 @@ public class UrlConfigurationLoader implements ConfigurationLoader{
 		e.printStackTrace();
 	    }
 	}
-	classLoader = new URLClassLoader(urls,Thread.currentThread().getContextClassLoader());
+	classLoader = new URLClassLoader(urls,parentClassLoader);
     }
 
     /**

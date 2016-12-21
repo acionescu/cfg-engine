@@ -41,5 +41,12 @@ public class UrlCfgLoader extends GenericCfgLoader{
 	cm.load(ul);	
 	return cm;
     }
+    
+    public ConfigurationManager load(String repositoryDir, String entryPointFile, ClassLoader parentClassLoader) throws ConfigurationException{
+	UrlConfigurationLoader ul = new UrlConfigurationLoader(new String[]{repositoryDir},entryPointFile,parentClassLoader);
+	ConfigurationManager cm = new ConfigurationManager(ul.getClassLoader());
+	cm.load(ul);	
+	return cm;
+    }
 
 }
