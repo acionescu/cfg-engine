@@ -44,7 +44,7 @@ public class ConfigurationManager {
     private XmlConfigurationBuilder handlerBuilder;
     private XmlConfigurationBuilder objectsBuilder;
     private String customHandlersFilePath = "cfg-handlers.xml";
-    private ClassLoader resourcesLoader = ClassLoader.getSystemClassLoader();
+    private ClassLoader resourcesLoader = Thread.currentThread().getContextClassLoader();//ClassLoader.getSystemClassLoader();
 
     public ConfigurationManager() {
 	initDefaultBuilders();
